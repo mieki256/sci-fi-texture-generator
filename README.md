@@ -43,23 +43,27 @@ Usage
 
 1. Start GIMP.
 2. Create new image. 1024x1024 or 512x512 or 2048x2048.
-3. Script-Fu -> Utils -> Sci-Fi texture. You get a bump mapping (B/W) texture.
+3. Script-Fu -> Render -> Sci-Fi texture 2. You get a bump mapping (B/W) texture.
 4. Script-Fu -> Utils -> Sci-Fi texture makeup. You get a RGB texture.
 
 
 Install
 -------
 
-Copy the file to the GIMP user folder.
+* Copy sci-fi-texture2.py to "GIMP-USER-FOLDER/plug-ins/"
+* Copy sci-fi-texture-makeup.scm to "GIMP-USER-FOLDER/scripts/"
 
-* sci-fi-texture.scm
-* sci-fi-texture-parts.scm
-* sci-fi-texture-makeup.scm
 
-### GIMP user folder
+### GIMP-USER-FOLDER
 
-* Windows10/8.1/7 : C:\Users\USERNAME\.gimp-2.8\scripts\
-* Linux : ~/.gimp-2.8/scripts/
+* Linux
+  *  ~/.gimp-2.8/plug-ins/
+  *  ~/.gimp-2.8/scripts/
+
+* Windows10/8.1/7
+  *  C:\\Users\\USERNAME\\.gimp-2.8\\plug-ins\\
+  *  C:\\Users\\USERNAME\\.gimp-2.8\\scripts\\
+
 
 License
 -------
