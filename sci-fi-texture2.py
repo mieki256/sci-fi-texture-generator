@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/04 06:33:02 +0900>
+# Last updated: <2018/02/05 05:20:57 +0900>
 
 u"""
 Generate Scif-Fi bump mapping texture.
@@ -15,6 +15,10 @@ testing environment :
 * GIMP 2.8.22 Portable + Windows10 x64
 
 Changelog :
+
+version 0.0.3 2018/02/05 by mieki256
+    * add : draw pattern
+    * add : progress bar
 
 version 0.0.2 2018/02/04 by mieki256
     * add : draw pattern
@@ -160,6 +164,8 @@ def draw_scifi_box_fill(image, layer, spacing, bg_col, area_chk):
     # save selection to channel
     channel = pdb.gimp_selection_save(image)
 
+    col_add_fg = True if random.random() <= 0.5 else False
+
     d = random.randint(2, 4)
     rects = get_div_rects(x0, y0, x1, y1, d, 2, 0.6)
     for rect in rects:
@@ -176,15 +182,15 @@ def draw_scifi_box_fill(image, layer, spacing, bg_col, area_chk):
             continue
 
         col = 0.0
-        if random.uniform(0, 1.0) < 0.5:
+        if col_add_fg:
             v = bg_col
             col = bg_col - random.uniform(v * 0.05, v * 0.3)
         else:
             v = 1.0 - bg_col
             col = bg_col + random.uniform(v * 0.05, v * 0.3)
 
-        w = math.floor(random.randint(4, 6) * aw / 10)
-        h = math.floor(random.randint(4, 6) * ah / 10)
+        w = math.floor(random.randint(3, 7) * aw / 10)
+        h = math.floor(random.randint(3, 7) * ah / 10)
         px0 = x0 + aa + random.randint(0, (aw - w))
         py0 = y0 + aa + random.randint(0, (ah - h))
 
@@ -192,6 +198,73 @@ def draw_scifi_box_fill(image, layer, spacing, bg_col, area_chk):
         pdb.gimp_image_select_rectangle(image, 2, px0, py0, w, h)
         gimp.set_foreground(col, col, col)
         pdb.gimp_edit_fill(layer, FOREGROUND_FILL)
+
+    # load selection from channel
+    pdb.gimp_selection_none(image)
+    pdb.gimp_selection_load(channel)
+
+    # remove channel
+    pdb.gimp_image_remove_channel(image, channel)
+
+
+def draw_scifi_box_fill_b(image, layer, spacing, bg_col, area_chk):
+    x0, y0, x1, y1, w0, h0 = get_scifi_draw_area(image, spacing)
+    if w0 < area_chk or h0 < area_chk:
+        return
+
+    # save selection to channel
+    channel = pdb.gimp_selection_save(image)
+
+    aa = 8
+    x0 += aa
+    y0 += aa
+    x1 -= aa
+    y1 -= aa
+    w0 = math.floor(x1 - x0)
+    h0 = math.floor(y1 - y0)
+    if w0 <= 0 or h0 <= 0:
+        return
+
+    col_add_fg = True if random.random() <= 0.5 else False
+
+    d = random.randint(2, 3)
+    rects = get_div_rects(x0, y0, x1, y1, d, 2, 0.6)
+    for rect in rects:
+        x0, y0, x1, y1 = rect
+        w0 = math.floor(x1 - x0)
+        h0 = math.floor(y1 - y0)
+        if w0 <= 0 or h0 <= 0:
+            continue
+
+        d = random.randint(2, 3)
+        nrects = get_div_rects(x0, y0, x1, y1, d, 2, 0.6)
+        for rect in nrects:
+            x0, y0, x1, y1 = rect
+            aa = 3
+            x0 += aa
+            y0 += aa
+            x1 -= aa
+            y1 -= aa
+            w = math.floor(x1 - x0)
+            h = math.floor(y1 - y0)
+            if w <= aa * 2 or h <= aa * 2:
+                continue
+
+            if random.random() <= 0.6:
+                continue
+
+            col = 0.0
+            if col_add_fg:
+                v = bg_col
+                col = bg_col - random.uniform(v * 0.1, v * 0.75)
+            else:
+                v = 1.0 - bg_col
+                col = bg_col + random.uniform(v * 0.1, v * 0.75)
+
+            # fill box
+            pdb.gimp_image_select_rectangle(image, 2, x0, y0, w, h)
+            gimp.set_foreground(col, col, col)
+            pdb.gimp_edit_fill(layer, FOREGROUND_FILL)
 
     # load selection from channel
     pdb.gimp_selection_none(image)
@@ -240,7 +313,6 @@ def draw_scifi_angled_line(image, layer, spacing, lcol, area_chk):
     if w0 < area_chk or h0 < area_chk:
         return
 
-    aa = 12
     px0 = x0 - spacing * 2
     px1 = x1 + spacing * 2
     py0 = y0 - spacing * 2
@@ -248,19 +320,30 @@ def draw_scifi_angled_line(image, layer, spacing, lcol, area_chk):
     w = px1 - px0
     h = py1 - py0
 
+    aa = 10
     if w >= h:
-        px1 = px0 + ((random.randint(0, 6) + 2) * w) / 10
-        px0 = px0 + ((random.randint(0, 6) + 2) * w) / 10
+        px1 = math.floor(px0 + random.randint(2, 6) * w / 10)
+        px0 = math.floor(px0 + random.randint(2, 6) * w / 10)
+        dx = aa
+        dy = 0
     else:
-        py1 = py0 + ((random.randint(0, 6) + 2) * h) / 10
-        py0 = py0 + ((random.randint(0, 6) + 2) * h) / 10
+        py1 = math.floor(py0 + random.randint(2, 6) * h / 10)
+        py0 = math.floor(py0 + random.randint(2, 6) * h / 10)
+        dx = 0
+        dy = aa
 
     bsize = 2
     # bsize = random.randint(2, 3)
     gimp.set_foreground(lcol, lcol, lcol)
     pdb.gimp_context_set_brush("2. Hardness 100")
     pdb.gimp_context_set_brush_size(bsize)
-    pdb.gimp_paintbrush_default(layer, 4, [px0, py0, px1, py1])
+
+    for i in range(3):
+        pdb.gimp_paintbrush_default(layer, 4, [px0, py0, px1, py1])
+        px0 += dx
+        px1 += dx
+        py0 += dy
+        py1 += dy
 
 
 def draw_scifi_angled_line_b(image, layer, spacing, lcol, lw, area_chk):
@@ -283,6 +366,9 @@ def draw_scifi_angled_line_b(image, layer, spacing, lcol, lw, area_chk):
     if px2 > px3:
         px2, px3 = px3, px2
 
+    if random.random() < 0.5:
+        py0, py1 = py1, py0
+
     bsize = 3
     # bsize = random.randint(2, 3)
     gimp.set_foreground(lcol, lcol, lcol)
@@ -291,6 +377,52 @@ def draw_scifi_angled_line_b(image, layer, spacing, lcol, lw, area_chk):
     pdb.gimp_paintbrush_default(layer, 12, [px0, py0, px1, py0,
                                             px2, py1, px3, py1,
                                             px4, py0, px5, py0])
+
+
+def draw_scifi_angled_line_c(image, layer, spacing, lcol, area_chk):
+    x0, y0, x1, y1, w0, h0 = get_scifi_draw_area(image, spacing)
+    if w0 <= area_chk or h0 <= area_chk:
+        return
+
+    px0 = math.floor(x0 - spacing * 2)
+    py0 = math.floor(y0 + random.randint(2, 6) * h0 / 10)
+    ang = 0
+    if random.random() > 0.5:
+        px0 = math.floor(x1 + spacing * 2)
+        ang = 180
+
+    if py0 <= (y0 + y1) / 2:
+        add_ang = 45 if ang == 0 else -45
+    else:
+        add_ang = -45 if ang == 0 else 45
+
+    dists = []
+    d0 = math.floor(random.randint(3, 5) * w0 / 10)
+    dists.append([d0, ang])
+    d1 = math.floor((w0 if w0 <= h0 else h0) / 4)
+    dists.append([d1, add_ang])
+    dists.append([h0, add_ang])
+
+    x, y = px0, py0
+    ang = 0
+    pnts = []
+    pnts.append(x)
+    pnts.append(y)
+    for dt in dists:
+        d, add_ang = dt
+        ang += add_ang
+        r = math.radians(ang)
+        x = math.floor(x + d * math.cos(r))
+        y = math.floor(y + d * math.sin(r))
+        pnts.append(x)
+        pnts.append(y)
+
+    bsize = 3
+    # bsize = random.randint(2, 3)
+    gimp.set_foreground(lcol, lcol, lcol)
+    pdb.gimp_context_set_brush("2. Hardness 100")
+    pdb.gimp_context_set_brush_size(bsize)
+    pdb.gimp_paintbrush_default(layer, len(pnts), pnts)
 
 
 def draw_scifi_rivet(image, layer, spacing, rsize, rspc, rbg, area_chk):
@@ -382,8 +514,10 @@ def generate_scifi_texture(img, layer,
     rects = div_rect(rects, 0, 0, w - 1, h - 1, dmax, 1, 0, cntmax, dmax)
 
     kind_cnt = 0
-    # kind_lst = [5, 5, 5]
-    kind_lst = [0, 1, 0, 4, 2, 0, 1, 3, 4, 5]
+    # kind_lst = [4, 4, 4]
+    kind_lst = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7]
+
+    gimp.progress_init("Draw rect...")
 
     for i, rect in enumerate(rects):
         bx0, by0, bx1, by1 = rect
@@ -408,7 +542,7 @@ def generate_scifi_texture(img, layer,
         gimp.set_foreground(fillcol, fillcol, fillcol)
         pdb.gimp_edit_fill(box_layer, FOREGROUND_FILL)
 
-        kind = kind_lst[i % len(kind_lst)]
+        kind = kind_lst[random.randint(0, len(kind_lst) - 1)]
 
         if kind == 0:
             # draw line
@@ -416,46 +550,55 @@ def generate_scifi_texture(img, layer,
             cnt = random.randint(3, 8)
             ldir = 0 if random.random() < 0.5 else 1
             lspc = 12
-            area_chk = 28
+            chk = 28
             draw_scifi_lines(img, line_layer, spacing,
-                             col, lspc, ldir, cnt, area_chk)
+                             col, lspc, ldir, cnt, chk)
         elif kind == 1:
             # draw box
             # col = (32.0 / 256.0)
             col_range = max([fillcol - (8.0 / 256.0), (8.0 / 256.0)])
             col = random.uniform(0, col_range)
-            area_chk = 20
-            draw_scifi_box(img, line_layer, spacing, col, area_chk)
+            chk = 20
+            draw_scifi_box(img, line_layer, spacing, col, chk)
         elif kind == 2:
+            # draw box fill
+            bspc = spacing + 8
+            chk = 28
+            draw_scifi_box_fill(img, line_layer, bspc, fillcol, chk)
+        elif kind == 3:
+            # draw box fill b
+            bspc = spacing + 8
+            chk = 28
+            draw_scifi_box_fill_b(img, line_layer, bspc, fillcol, chk)
+        elif kind == 4:
             # draw grid
             col = 0.0
             lspc = 12
-            area_chk = 60
-            draw_scifi_grid(img, line_layer, spacing,
-                            col, fillcol, lspc, area_chk)
-        elif kind == 3:
-            # draw angled line
-            area_chk = 28
-            draw_scifi_angled_line(img, line_layer, spacing, bg_col, area_chk)
-        elif kind == 4:
-            # draw box fill
-            bspc = spacing + 8
-            area_chk = 28
-            draw_scifi_box_fill(img, line_layer, bspc, fillcol, area_chk)
+            chk = 60
+            draw_scifi_grid(img, line_layer, spacing, col, fillcol, lspc, chk)
         elif kind == 5:
+            # draw angled line
+            chk = 28
+            draw_scifi_angled_line(img, line_layer, spacing, bg_col, chk)
+        elif kind == 6:
             # draw angled line b
             lw = 12
-            area_chk = lw * 4
-            draw_scifi_angled_line_b(img, line_layer, spacing,
-                                     bg_col, lw, area_chk)
+            chk = lw * 4
+            draw_scifi_angled_line_b(img, line_layer, spacing, bg_col, lw, chk)
+        elif kind == 7:
+            # draw angled line c
+            lw = 12
+            chk = lw * 4
+            draw_scifi_angled_line_c(img, line_layer, spacing, bg_col, chk)
 
         if rivet_enable:
             # draw rivet
-            area_chk = 36
+            chk = 36
             draw_scifi_rivet(img, rivet_layer, spacing,
-                             rivet_size, rivet_spc, rivet_bg, area_chk)
+                             rivet_size, rivet_spc, rivet_bg, chk)
 
         gimp.displays_flush()
+        gimp.progress_update(float(i + 1) / len(rects))
 
     # merge layer
     if merge_enable:
@@ -464,6 +607,8 @@ def generate_scifi_texture(img, layer,
         pdb.gimp_image_merge_down(img, rivet_layer, 1)
         next_layer = pdb.gimp_image_get_active_layer(img)
         next_layer.name = "scifi-bump"
+
+    pdb.gimp_progress_end()
 
     pdb.gimp_selection_none(img)
     gimp.set_foreground(old_color)
