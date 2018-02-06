@@ -30,6 +30,10 @@ Screenshots
 
 ![Screenshot 02](./screenshots/screenshot02.png)
 
+[Sample 01 (1024x1024, png)](./screenshots/sample01.png)
+
+[Sample 02 (1024x1024, png)](./screenshots/sample02.png)
+
 
 Requirement
 -----------
