@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/06 01:12:58 +0900>
+# Last updated: <2018/02/06 20:14:03 +0900>
 
 u"""
 Generate Scif-Fi bump mapping texture.
@@ -16,6 +16,9 @@ testing environment :
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog :
+
+version 0.0.5 2018/02/06 by mieki256
+    * delete : merge layer
 
 version 0.0.4 2018/02/05 by mieki256
     * add : rivet box type
@@ -36,6 +39,7 @@ version 0.0.1 2018/02/03 by mieki256
 from gimpfu import *    # NOQA
 import random
 import math
+import time
 
 
 def get_div_rects(x0, y0, x1, y1, d, v, sftv):
@@ -542,23 +546,21 @@ def draw_scifi_rivet_box(image, layer, spacing, rsize, rspc, chk):
 
 
 def generate_scifi_texture(img, layer,
-                           dmin, dmax, cntmax, spacing, borderradius,
+                           dmin, dmax, cntmax, spc, borderradius,
                            rivet_enable, rivet_spc, rivet_size, rivet_bg,
-                           rivet_type,
-                           merge_enable, seed, randomize, drawtype):
+                           rivet_type, seed, randomize, drawtype):
     """Main func."""
 
     dmin = int(dmin)
     dmax = int(dmax)
     cntmax = int(cntmax)
-    spacing = int(spacing)
+    spc = int(spc)
     borderradius = int(borderradius)
     rivet_enable = True if int(rivet_enable) == 1 else False
     rivet_spc = int(rivet_spc)
     rivet_size = int(rivet_size)
     rivet_bg = True if int(rivet_bg) == 1 else False
     rivet_type = int(rivet_type)
-    merge_enable = True if int(merge_enable) == 1 else False
     seed = int(seed)
     randomize = int(randomize)
     drawtype = int(drawtype)
@@ -567,35 +569,24 @@ def generate_scifi_texture(img, layer,
         dmax = dmin
 
     if randomize == 1:
-        random.seed()
-    else:
-        random.seed(seed)
+        seed = math.floor(time.time())
+    random.seed(seed)
+    # gimp.message("seed = %d" % (seed))
 
     w, h = img.width, img.height
     pdb.gimp_image_undo_group_start(img)
     old_color = gimp.get_foreground()
     old_brush = pdb.gimp_context_get_brush()
 
-    bg_layer = gimp.Layer(img, "bg fill", w, h, RGBA_IMAGE, 100, NORMAL_MODE)
-    box_layer = gimp.Layer(img, "box fill", w, h, RGBA_IMAGE, 100, NORMAL_MODE)
-    line_layer = gimp.Layer(img, "line", w, h, RGBA_IMAGE, 100, NORMAL_MODE)
-    rivet_layer = gimp.Layer(img, "rivet", w, h, RGBA_IMAGE, 100, NORMAL_MODE)
+    layer = gimp.Layer(img, "scifi-bump", w, h, RGBA_IMAGE, 100, NORMAL_MODE)
+    layer.fill(TRANSPARENT_FILL)
+    img.add_layer(layer, 0)
 
-    bg_layer.fill(TRANSPARENT_FILL)
-    box_layer.fill(TRANSPARENT_FILL)
-    line_layer.fill(TRANSPARENT_FILL)
-    rivet_layer.fill(TRANSPARENT_FILL)
-
-    img.add_layer(bg_layer, 0)
-    img.add_layer(box_layer, 0)
-    img.add_layer(line_layer, 0)
-    img.add_layer(rivet_layer, 0)
-
-    # fill bg layer
+    # fill bg
     bg_col = 0.25
     pdb.gimp_selection_all(img)
     gimp.set_foreground(bg_col, bg_col, bg_col)
-    bg_layer.fill(FOREGROUND_FILL)
+    layer.fill(FOREGROUND_FILL)
     pdb.gimp_selection_none(img)
 
     # divide rect
@@ -605,14 +596,14 @@ def generate_scifi_texture(img, layer,
     kind_cnt = 0
     kind_lst = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7]
 
-    gimp.progress_init("Draw rect...")
+    gimp.progress_init("Drawing rect. seed = %d" % (seed))
 
     for i, rect in enumerate(rects):
         bx0, by0, bx1, by1 = rect
-        x0 = math.floor(bx0 + spacing)
-        y0 = math.floor(by0 + spacing)
-        x1 = math.floor(bx1 - spacing)
-        y1 = math.floor(by1 - spacing)
+        x0 = math.floor(bx0 + spc)
+        y0 = math.floor(by0 + spc)
+        x1 = math.floor(bx1 - spc)
+        y1 = math.floor(by1 - spc)
         w0 = x1 - x0
         h0 = y1 - y0
 
@@ -631,7 +622,7 @@ def generate_scifi_texture(img, layer,
         # box fill
         fillcol = bg_col + random.uniform((24.0 / 256.0), (80.0 / 256.0))
         gimp.set_foreground(fillcol, fillcol, fillcol)
-        pdb.gimp_edit_fill(box_layer, FOREGROUND_FILL)
+        pdb.gimp_edit_fill(layer, FOREGROUND_FILL)
 
         if drawtype != 1:
             # draw parts
@@ -640,13 +631,13 @@ def generate_scifi_texture(img, layer,
                 kind = drawtype - 2
 
             if kind == 0:
-                # draw line
+                # draw lines
                 col = 0.0 if random.random() <= 0.5 else 1.0
                 cnt = random.randint(3, 8)
                 ldir = 0 if random.random() < 0.5 else 1
                 lspc = 12
                 chk = 28
-                draw_scifi_lines(img, line_layer, spacing,
+                draw_scifi_lines(img, layer, spc,
                                  col, lspc, ldir, cnt, chk)
             elif kind == 1:
                 # draw box
@@ -654,49 +645,40 @@ def generate_scifi_texture(img, layer,
                 v = fillcol
                 col = fillcol - random.uniform(v * 0.3, v * 0.7)
                 chk = 20
-                draw_scifi_box(img, line_layer, spacing, col, chk)
+                draw_scifi_box(img, layer, spc, col, chk)
             elif kind == 2:
                 # draw box fill
-                bspc = spacing + 8
-                draw_scifi_box_fill(img, line_layer, bspc, fillcol, 28)
+                bspc = spc + 8
+                draw_scifi_box_fill(img, layer, bspc, fillcol, 28)
             elif kind == 3:
                 # draw box fill b
-                bspc = spacing + 8
-                draw_scifi_box_fill_b(img, line_layer, bspc, fillcol, 28)
+                bspc = spc + 8
+                draw_scifi_box_fill_b(img, layer, bspc, fillcol, 28)
             elif kind == 4:
                 # draw grid
-                draw_scifi_grid(img, line_layer, spacing, 0.0, fillcol, 12, 60)
+                draw_scifi_grid(img, layer, spc, 0.0, fillcol, 12, 60)
             elif kind == 5:
                 # draw angled line
-                draw_scifi_angled_line(img, line_layer, spacing, bg_col, 28)
+                draw_scifi_angled_line(img, layer, spc, bg_col, 28)
             elif kind == 6:
                 # draw angled line b
-                draw_scifi_angled_line_b(img, line_layer, spacing,
-                                         bg_col, 12, 12 * 4)
+                draw_scifi_angled_line_b(img, layer, spc, bg_col, 12, 12 * 4)
             elif kind == 7:
                 # draw angled line c
-                draw_scifi_angled_line_c(img, line_layer, spacing,
-                                         bg_col, 12 * 4)
+                draw_scifi_angled_line_c(img, layer, spc, bg_col, 12 * 4)
 
             if rivet_enable:
                 # draw rivet
                 if rivet_type == 0:
-                    draw_scifi_rivet(img, rivet_layer, spacing,
+                    draw_scifi_rivet(img, layer, spc,
                                      rivet_size, rivet_spc, rivet_bg, 36)
                 else:
-                    draw_scifi_rivet_box(img, rivet_layer, spacing,
+                    draw_scifi_rivet_box(img, layer, spc,
                                          rivet_size, rivet_spc, 64)
 
-        gimp.displays_flush()
         gimp.progress_update(float(i + 1) / len(rects))
-
-    # merge layer
-    if merge_enable:
-        pdb.gimp_image_merge_down(img, box_layer, 1)
-        pdb.gimp_image_merge_down(img, line_layer, 1)
-        pdb.gimp_image_merge_down(img, rivet_layer, 1)
-        next_layer = pdb.gimp_image_get_active_layer(img)
-        next_layer.name = "scifi-bump"
+        pdb.gimp_selection_none(img)
+        gimp.displays_flush()
 
     pdb.gimp_progress_end()
 
@@ -725,19 +707,18 @@ register(
         (PF_SPINNER,  "dmin",         "Divide min",     1, (1, 10, 1)),
         (PF_SPINNER,  "dmax",         "Divide max",     3, (1, 10, 1)),
         (PF_SPINNER,  "cntmax",       "Repeat",         4, (1, 10, 1)),
-        (PF_SPINNER,  "spacing",      "Spacing",        2, (0, 16, 1)),
+        (PF_SPINNER,  "spc",          "Spacing",        2, (0, 16, 1)),
         (PF_SPINNER,  "borderradius", "Border radius",  2, (0, 16, 1)),
         (PF_TOGGLE,   "rivet_enable", "Draw rivet",     1),
         (PF_SPINNER,  "rivet_spc",    "Rivet spacing",  8, (1, 64, 1)),
         (PF_SPINNER,  "rivet_size",   "Rivet size",     9, (1, 64, 1)),
         (PF_TOGGLE,   "rivet_bg",     "Draw rivet bg",  0),
         (PF_OPTION,   "rivet_type",   "Rivet type",     0, ["Circle", "Box"]),
-        (PF_TOGGLE,   "merge_enable", "Merge Layer",    1),
         (PF_INT,      "seed",         "Random seed",    42),
         (PF_TOGGLE,   "randomize",    "Randomize",      1),
         (PF_OPTION,   "drawtype",     "Draw type",      0,
          ["All", "Rect fill only",
-          "Line only", "Box only",
+          "Lines only", "Box only",
           "Box fill only", "Box fill b only", "Grid only",
           "Angled line only", "Angled line b only", "Angled line c only"
           ])
