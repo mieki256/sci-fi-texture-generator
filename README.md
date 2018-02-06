@@ -43,16 +43,16 @@ Usage
 
 1. Start GIMP.
 2. Create new image. 1024x1024 or 512x512 or 2048x2048.
-3. Script-Fu -> Render -> Sci-Fi texture 2. You get a bump mapping (B/W) texture.
+3. Filters -> Render -> Sci-Fi texture 2. You get a bump mapping (B/W) texture.
 4. Script-Fu -> Utils -> Sci-Fi texture makeup. You get a RGB texture.
-
+5. Option. Filters -> Render -> Random boxes pycairo. Set layer mode to softlight. Set opacity to 20.
 
 Install
 -------
 
 * Copy sci-fi-texture2.py to "GIMP-USER-FOLDER/plug-ins/"
 * Copy sci-fi-texture-makeup.scm to "GIMP-USER-FOLDER/scripts/"
-
+* Opyion. Copy random-boxes-pycairo.py to "GIMP-USER-FOLDER/plug-ins/"
 
 ### GIMP-USER-FOLDER
 
