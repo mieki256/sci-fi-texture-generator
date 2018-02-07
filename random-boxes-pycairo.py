@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/07 19:12:45 +0900>
+# Last updated: <2018/02/08 02:36:55 +0900>
 
 u"""
 Random boxes with cairo(pycairo).
@@ -34,14 +34,13 @@ import time
 
 def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
-    u = struct.Struct('=L')
-    p = struct.Struct('>L')
+    unpack = struct.Struct('=L').unpack_from
+    pack = struct.Struct('>L').pack
     lmax = len(src) / 4
     rgba_buf = [None] * lmax
     for i in xrange(lmax):
-        argb = u.unpack_from(src, i * 4)[0]
-        rgba = ((argb & 0x00ffffff) << 8) | ((argb >> 24) & 0x0ff)
-        rgba_buf[i] = p.pack(rgba)
+        argb = unpack(src, i * 4)[0]
+        rgba_buf[i] = pack(((argb & 0x00ffffff) << 8) | ((argb >> 24) & 0x0ff))
         if i & 0x3fff == 0:
             gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
 
