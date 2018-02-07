@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/07 06:49:35 +0900>
+# Last updated: <2018/02/07 19:12:45 +0900>
 
 u"""
 Random boxes with cairo(pycairo).
@@ -15,6 +15,9 @@ testing environment :
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog
+
+version 0.0.2 2018/02/07 by mieki256
+    * update : get_rgba_str()
 
 version 0.0.1 2018/02/07 by mieki256
     * first release.
@@ -31,22 +34,18 @@ import time
 
 def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
-    rgba_buf = ""
-    l = len(src)
-    lmax = l / 4
+    u = struct.Struct('=L')
+    p = struct.Struct('>L')
+    lmax = len(src) / 4
+    rgba_buf = [None] * lmax
     for i in xrange(lmax):
-        i0 = i * 4
-        i1 = i0 + 4
-        bgra = struct.unpack('=L', src[i0: i1])[0]
-        a = (bgra >> 24) & 0x0ff
-        r = (bgra >> 16) & 0x0ff
-        g = (bgra >> 8) & 0x0ff
-        b = bgra & 0x0ff
-        rgba = struct.pack('4B', r, g, b, a)
-        rgba_buf += rgba
-        gimp.progress_update(0.5 + 0.4 * float(i + 1) / lmax)
+        argb = u.unpack_from(src, i * 4)[0]
+        rgba = ((argb & 0x00ffffff) << 8) | ((argb >> 24) & 0x0ff)
+        rgba_buf[i] = p.pack(rgba)
+        if i & 0x3fff == 0:
+            gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
 
-    return rgba_buf
+    return ''.join(rgba_buf)
 
 
 def draw_by_cairo_box_fill(surface, imgw, imgh, cnt, wmin, wmax, hmin, hmax):
@@ -150,11 +149,10 @@ def python_fu_random_boxes_main(img, layer,
     rgn = layer.get_pixel_rgn(0, 0, w, h, True, True)
     rgn[0:w, 0:h] = str(dst)
 
-    gimp.progress_update(0.9)
-
     layer.flush()
     layer.merge_shadow()
     layer.update(0, 0, w, h)
+
     pdb.gimp_progress_end()
     pdb.gimp_image_undo_group_end(img)
     pdb.gimp_displays_flush()
