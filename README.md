@@ -26,6 +26,8 @@ Generate Sci-Fi bump mapping texture. It is processed by Script-fu of GIMP.
 Screenshots
 -----------
 
+[Sci-Fi-texture-generator with GIMP Python-fu demo - YouTube](https://youtu.be/P7TMjbHVIVM)
+
 ![Screenshot 01](./screenshots/screenshot01.png)
 
 ![Screenshot 02](./screenshots/screenshot02.png)
