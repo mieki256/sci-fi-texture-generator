@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/06 20:14:03 +0900>
+# Last updated: <2019/12/02 20:49:48 +0900>
 
 u"""
 Generate Scif-Fi bump mapping texture.
@@ -16,6 +16,9 @@ testing environment :
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog :
+
+version 0.0.6 2019/12/02 by mieki256
+    * update : change white lines color
 
 version 0.0.5 2018/02/06 by mieki256
     * delete : merge layer
@@ -632,7 +635,10 @@ def generate_scifi_texture(img, layer,
 
             if kind == 0:
                 # draw lines
-                col = 0.0 if random.random() <= 0.5 else 1.0
+                v = fillcol
+                col = 0.0 if random.random() <= 0.5 else random.uniform(v * 1.05, v * 1.2)
+                if col >= 1.0:
+                    col = 1.0
                 cnt = random.randint(3, 8)
                 ldir = 0 if random.random() < 0.5 else 1
                 lspc = 12
