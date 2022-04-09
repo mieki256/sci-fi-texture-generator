@@ -21,7 +21,7 @@ Screenshots
 Requirement
 -----------
 
-* Python 2.7 o 3.x
+* Python 2.7 or 3.x
 * tkinter
 * pycairo
 * Pillow
