@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/04/09 22:02:10 +0900>
+# Last updated: <2022/04/09 22:27:58 +0900>
 u"""
 Generate Scif-Fi bump mapping texture with pycairo.
 
@@ -907,7 +907,7 @@ def generate_scifi_texture_pycairo(img, layer,
     layer.fill(TRANSPARENT_FILL)
     img.add_layer(layer, 0)
 
-    gimp.progress_init("seed = %d" % (seed))
+    gimp.progress_init("seed = %d" % (nseed))
 
     # transfer gimp layer
     src = newsurf.get_data()
