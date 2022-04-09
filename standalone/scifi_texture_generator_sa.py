@@ -1,6 +1,6 @@
 #!python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/04/05 08:02:35 +0900>
+# Last updated: <2022/04/09 22:41:58 +0900>
 """
 Sci-Fi texture generator with pycairo.
 
@@ -1009,7 +1009,12 @@ class MyApp(tk.Tk, object):
             # view fit
             cw = self.canvas.winfo_width()
             ch = self.canvas.winfo_height()
-            self.im_pad = ImageOps.pad(self.im, (cw - 20, ch - 20), method=Image.LANCZOS)
+            try:
+                method = Image.Resampling.LANCZOS
+            except:
+                method = Image.LANCZOS
+
+            self.im_pad = ImageOps.pad(self.im, (cw - 20, ch - 20), method=method)
             self.photo_image = ImageTk.PhotoImage(image=self.im_pad)
         else:
             # view 1:1
