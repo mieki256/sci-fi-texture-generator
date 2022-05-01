@@ -1,6 +1,6 @@
 #!python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/04/09 22:41:58 +0900>
+# Last updated: <2022/05/01 09:11:37 +0900>
 """
 Sci-Fi texture generator with pycairo.
 
@@ -10,6 +10,10 @@ require: Python, tkinter, pycairo, Pillow
 
 * Windows10 x64 21H2 + Python 2.7.18 32bit + pycairo 1.8.10 + Pillow 6.2.2
 * Windows10 x64 21H2 + Python 3.9.12 64bit + pycairo 1.21.0 + Pillow 9.0.1
+
+Version 0.0.2 2022/05/01 by mieki256
+    * fix : SciFiTex.generate()
+
 """
 
 import sys
@@ -703,7 +707,7 @@ class SciFiTex:
         bg_col = min([1.0, (float(bordercol) / 256.0)])
         # bg_col = 0.25
         x0, y0 = 0, 0
-        x1, y1 = imgw - 1, imgh - 1
+        x1, y1 = imgw, imgh
         SciFiTex.draw_rect(ctx, x0, y0, x1, y1, bg_col, None, None, 0)
 
         pat_kind_lst = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7]

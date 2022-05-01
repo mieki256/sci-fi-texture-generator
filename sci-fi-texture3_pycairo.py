@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/04/09 22:27:58 +0900>
+# Last updated: <2022/05/01 09:12:42 +0900>
 u"""
 Generate Scif-Fi bump mapping texture with pycairo.
 
@@ -16,6 +16,10 @@ testing environment :
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog :
+
+version 0.0.8 2022/05/01 by mieki256
+    * update : get_rgba_str()
+    * fix : SciFiTex.generate()
 
 version 0.0.7 2022/04/09 by mieki256
     * update : use pycairo
@@ -719,7 +723,7 @@ class SciFiTex:
         bg_col = min([1.0, (float(bordercol) / 256.0)])
         # bg_col = 0.25
         x0, y0 = 0, 0
-        x1, y1 = imgw - 1, imgh - 1
+        x1, y1 = imgw, imgh
         SciFiTex.draw_rect(ctx, x0, y0, x1, y1, bg_col, None, None, 0)
 
         pat_kind_lst = [0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7]
@@ -824,17 +828,14 @@ class SciFiTex:
 
 def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
-    unpack = struct.Struct('=L').unpack_from
-    pack = struct.Struct('>L').pack
     lmax = len(src) / 4
-    rgba_buf = [None] * lmax
-    for i in range(lmax):
-        argb = unpack(src, i * 4)[0]
-        rgba_buf[i] = pack(((argb & 0x00ffffff) << 8) | ((argb >> 24) & 0x0ff))
+    argb = list(struct.unpack("=%dL" % lmax, src))
+    rgba = [None] * lmax
+    for i, d in enumerate(argb):
+        rgba[i] = ((d & 0x0ffffff) << 8) | ((d >> 24) & 0x0ff)
         if i & 0x3fff == 0:
             gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
-
-    return ''.join(rgba_buf)
+    return struct.pack(">%dL" % lmax, *rgba)
 
 
 def generate_scifi_texture_pycairo(img, layer,

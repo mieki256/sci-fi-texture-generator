@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2018/02/08 02:36:55 +0900>
+# Last updated: <2022/05/01 08:32:10 +0900>
 
 u"""
 Random boxes with cairo(pycairo).
@@ -11,11 +11,15 @@ Author : mieki256
 License : CC0 / Public Domain
 
 testing environment :
+* GIMP 2.10.30 Portable + Windows10 x64 21H2
 * GIMP 2.8.22 Portable + Windows10 x64
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog
 
+version 0.0.3 2022/05/01 by mieki256
+    * update : get_rgba_str()
+    
 version 0.0.2 2018/02/07 by mieki256
     * update : get_rgba_str()
 
@@ -34,17 +38,14 @@ import time
 
 def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
-    unpack = struct.Struct('=L').unpack_from
-    pack = struct.Struct('>L').pack
     lmax = len(src) / 4
-    rgba_buf = [None] * lmax
-    for i in xrange(lmax):
-        argb = unpack(src, i * 4)[0]
-        rgba_buf[i] = pack(((argb & 0x00ffffff) << 8) | ((argb >> 24) & 0x0ff))
+    argb = list(struct.unpack("=%dL" % lmax, src))
+    rgba = [None] * lmax
+    for i, d in enumerate(argb):
+        rgba[i] = ((d & 0x0ffffff) << 8) | ((d >> 24) & 0x0ff)
         if i & 0x3fff == 0:
             gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
-
-    return ''.join(rgba_buf)
+    return struct.pack(">%dL" % lmax, *rgba)
 
 
 def draw_by_cairo_box_fill(surface, imgw, imgh, cnt, wmin, wmax, hmin, hmax):
