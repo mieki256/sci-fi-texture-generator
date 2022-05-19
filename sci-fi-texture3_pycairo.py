@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/05/01 09:12:42 +0900>
+# Last updated: <2022/05/02 08:38:20 +0900>
 u"""
 Generate Scif-Fi bump mapping texture with pycairo.
 
@@ -16,6 +16,9 @@ testing environment :
 * GIMP 2.8.16 + Ubuntu Linux 16.04 LTS
 
 Changelog :
+
+version 0.0.9 2022/05/02 by mieki256
+    * update : get_rgba_str()
 
 version 0.0.8 2022/05/01 by mieki256
     * update : get_rgba_str()
@@ -830,11 +833,7 @@ def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
     lmax = len(src) / 4
     argb = list(struct.unpack("=%dL" % lmax, src))
-    rgba = [None] * lmax
-    for i, d in enumerate(argb):
-        rgba[i] = ((d & 0x0ffffff) << 8) | ((d >> 24) & 0x0ff)
-        if i & 0x3fff == 0:
-            gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
+    rgba = [(((d & 0x0ffffff) << 8) + ((d >> 24) & 0x0ff)) for d in argb]
     return struct.pack(">%dL" % lmax, *rgba)
 
 
@@ -915,10 +914,12 @@ def generate_scifi_texture_pycairo(img, layer,
     dst = get_rgba_str(src)
     rgn = layer.get_pixel_rgn(0, 0, w, h, True, True)
     rgn[0:w, 0:h] = str(dst)
+    gimp.progress_update(0.9)
 
     layer.flush()
     layer.merge_shadow()
     layer.update(0, 0, w, h)
+    gimp.progress_update(1.0)
 
     # gimp.progress_update(float(i + 1) / len(rects))
 

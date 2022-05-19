@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- mode: python; Encoding: utf-8; coding: utf-8 -*-
-# Last updated: <2022/05/01 08:32:10 +0900>
+# Last updated: <2022/05/02 08:35:57 +0900>
 
 u"""
 Random boxes with cairo(pycairo).
@@ -17,6 +17,9 @@ testing environment :
 
 Changelog
 
+version 0.0.4 2022/05/02 by mieki256
+    * update : get_rgba_str()
+    
 version 0.0.3 2022/05/01 by mieki256
     * update : get_rgba_str()
     
@@ -40,11 +43,7 @@ def get_rgba_str(src):
     """Convert cairo surface data to RGBA."""
     lmax = len(src) / 4
     argb = list(struct.unpack("=%dL" % lmax, src))
-    rgba = [None] * lmax
-    for i, d in enumerate(argb):
-        rgba[i] = ((d & 0x0ffffff) << 8) | ((d >> 24) & 0x0ff)
-        if i & 0x3fff == 0:
-            gimp.progress_update(0.5 + 0.5 * float(i + 1) / lmax)
+    rgba = [(((d & 0x0ffffff) << 8) + ((d >> 24) & 0x0ff)) for d in argb]
     return struct.pack(">%dL" % lmax, *rgba)
 
 
@@ -148,10 +147,12 @@ def python_fu_random_boxes_main(img, layer,
     dst = get_rgba_str(src)
     rgn = layer.get_pixel_rgn(0, 0, w, h, True, True)
     rgn[0:w, 0:h] = str(dst)
+    gimp.progress_update(0.9)
 
     layer.flush()
     layer.merge_shadow()
     layer.update(0, 0, w, h)
+    gimp.progress_update(1.0)
 
     pdb.gimp_progress_end()
     pdb.gimp_image_undo_group_end(img)
