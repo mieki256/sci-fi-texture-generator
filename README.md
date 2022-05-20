@@ -43,9 +43,10 @@ Screenshots
 Requirement
 -----------
 
-* GIMP 2.10.30 Portable + Windows10 x64 21H2
-* GIMP 2.8.22 Portable + Windows10 x64
-* GIMP 2.10.30 (flatpak version) + Ubuntu Linux 20.04 LTS
+* Windows10 x64 21H2 + GIMP 2.10.30 Portable
+* Windows10 x64 21H2 + GIMP 2.8.22 Portable
+* Ubuntu Linux 20.04 LTS + GIMP 2.10.30 (flatpak version)
+* Ubuntu Linux 18.04 LTS + GIMP 2.8.22
 
 
 Usage
